@@ -52,7 +52,6 @@ describe('Sweets API', () => {
   // Test GET /api/sweets - Get all sweets
   describe('GET /api/sweets', () => {
     test('should get all sweets when authenticated', async () => {
-      // Create some test sweets
       await Sweet.create([
         {
           name: 'Chocolate Bar',
@@ -378,6 +377,281 @@ describe('Sweets API', () => {
 
       expect(response.body.success).toBe(false);
       expect(response.body.message).toContain('token');
+    });
+  });
+
+  // Test DELETE /api/sweets/:id - Delete a sweet (Admin only)
+  describe('DELETE /api/sweets/:id', () => {
+    let adminToken;
+    let adminUser;
+    let testSweet;
+
+    beforeAll(async () => {
+      // Clean up any existing admin user first
+      await User.deleteMany({ username: 'admin' });
+      
+      // Create admin user
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      adminUser = new User({
+        username: 'admin',
+        email: 'admin@example.com',
+        password: hashedPassword,
+        role: 'admin'
+      });
+      await adminUser.save();
+
+      adminToken = jwt.sign(
+        { userId: adminUser._id, email: adminUser.email, role: adminUser.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+    });
+
+    beforeEach(async () => {
+      testSweet = await Sweet.create({
+        name: 'Sweet to Delete',
+        category: 'Test',
+        price: 1.00,
+        quantity: 50
+      });
+    });
+
+    test('should delete a sweet when admin', async () => {
+      const response = await request(app)
+        .delete(`/api/sweets/${testSweet._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe('Sweet deleted successfully');
+
+      // Verify sweet is deleted
+      const deletedSweet = await Sweet.findById(testSweet._id);
+      expect(deletedSweet).toBeNull();
+    });
+
+    test('should not delete sweet when regular user (non-admin)', async () => {
+      const response = await request(app)
+        .delete(`/api/sweets/${testSweet._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(403);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toContain('Admin');
+    });
+
+    test('should return 404 for non-existent sweet', async () => {
+      const fakeId = '507f1f77bcf86cd799439011';
+      const response = await request(app)
+        .delete(`/api/sweets/${fakeId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toContain('not found');
+    });
+
+    test('should require authentication', async () => {
+      const response = await request(app)
+        .delete(`/api/sweets/${testSweet._id}`)
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toContain('token');
+    });
+  });
+
+  // Test POST /api/sweets/:id/purchase 
+  describe('POST /api/sweets/:id/purchase', () => {
+    let testSweet;
+
+    beforeEach(async () => {
+      testSweet = await Sweet.create({
+        name: 'Purchasable Sweet',
+        category: 'Test',
+        price: 2.50,
+        quantity: 100
+      });
+    });
+
+    test('should purchase a sweet and decrease quantity', async () => {
+      const initialQuantity = testSweet.quantity;
+      const purchaseQuantity = 5;
+
+      const response = await request(app)
+        .post(`/api/sweets/${testSweet._id}/purchase`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ quantity: purchaseQuantity })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe('Purchase successful');
+      expect(response.body.data.quantity).toBe(initialQuantity - purchaseQuantity);
+
+      const updatedSweet = await Sweet.findById(testSweet._id);
+      expect(updatedSweet.quantity).toBe(initialQuantity - purchaseQuantity);
+    });
+
+    test('should not purchase more than available quantity', async () => {
+      const response = await request(app)
+        .post(`/api/sweets/${testSweet._id}/purchase`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ quantity: 200 }) // More than available (100)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message.toLowerCase()).toContain('insufficient');
+    });
+
+    test('should not purchase when quantity is zero', async () => {
+
+        testSweet.quantity = 0;
+      await testSweet.save();
+
+      const response = await request(app)
+        .post(`/api/sweets/${testSweet._id}/purchase`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ quantity: 1 })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    test('should require quantity in request body', async () => {
+      const response = await request(app)
+        .post(`/api/sweets/${testSweet._id}/purchase`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({})
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    test('should return 404 for non-existent sweet', async () => {
+      const fakeId = '507f1f77bcf86cd799439011';
+      const response = await request(app)
+        .post(`/api/sweets/${fakeId}/purchase`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ quantity: 1 })
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    test('should require authentication', async () => {
+      const response = await request(app)
+        .post(`/api/sweets/${testSweet._id}/purchase`)
+        .send({ quantity: 1 })
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  // Test POST /api/sweets/:id/restock - Restock a sweet (Admin only)
+  describe('POST /api/sweets/:id/restock', () => {
+    let adminToken;
+    let adminUser;
+    let testSweet;
+
+    beforeAll(async () => {
+      // Clean up any existing admin user first
+      await User.deleteMany({ username: 'admin' });
+      
+      // Create admin user
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      adminUser = new User({
+        username: 'admin',
+        email: 'admin@example.com',
+        password: hashedPassword,
+        role: 'admin'
+      });
+      await adminUser.save();
+
+      adminToken = jwt.sign(
+        { userId: adminUser._id, email: adminUser.email, role: adminUser.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+    });
+
+    beforeEach(async () => {
+      testSweet = await Sweet.create({
+        name: 'Sweet to Restock',
+        category: 'Test',
+        price: 1.50,
+        quantity: 50
+      });
+    });
+
+    test('should restock a sweet and increase quantity when admin', async () => {
+      const initialQuantity = testSweet.quantity;
+      const restockQuantity = 100;
+
+      const response = await request(app)
+        .post(`/api/sweets/${testSweet._id}/restock`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ quantity: restockQuantity })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe('Restock successful');
+      expect(response.body.data.quantity).toBe(initialQuantity + restockQuantity);
+
+
+      const updatedSweet = await Sweet.findById(testSweet._id);
+      expect(updatedSweet.quantity).toBe(initialQuantity + restockQuantity);
+    });
+
+    test('should not restock when regular user (non-admin)', async () => {
+      const response = await request(app)
+        .post(`/api/sweets/${testSweet._id}/restock`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ quantity: 50 })
+        .expect(403);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toContain('Admin');
+    });
+
+    test('should require quantity in request body', async () => {
+      const response = await request(app)
+        .post(`/api/sweets/${testSweet._id}/restock`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({})
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    test('should not restock with negative quantity', async () => {
+      const response = await request(app)
+        .post(`/api/sweets/${testSweet._id}/restock`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ quantity: -10 })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    test('should return 404 for non-existent sweet', async () => {
+      const fakeId = '507f1f77bcf86cd799439011';
+      const response = await request(app)
+        .post(`/api/sweets/${fakeId}/restock`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ quantity: 50 })
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    test('should require authentication', async () => {
+      const response = await request(app)
+        .post(`/api/sweets/${testSweet._id}/restock`)
+        .send({ quantity: 50 })
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
     });
   });
 });

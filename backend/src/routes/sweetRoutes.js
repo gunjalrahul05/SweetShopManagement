@@ -1,8 +1,8 @@
 // Sweet routes
 
 import express from 'express';
-import { getAllSweets, createSweet, searchSweets, updateSweet } from '../controllers/sweetController.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { getAllSweets, createSweet, searchSweets, updateSweet, deleteSweet, purchaseSweet, restockSweet } from '../controllers/sweetController.js';
+import { authenticateToken, isAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -20,6 +20,15 @@ router.post('/', createSweet);
 
 // - Update a sweet
 router.put('/:id', updateSweet);
+
+// - Delete a sweet (Admin only)
+router.delete('/:id', isAdmin, deleteSweet);
+
+// - Purchase a sweet
+router.post('/:id/purchase', purchaseSweet);
+
+// - Restock a sweet (Admin only)
+router.post('/:id/restock', isAdmin, restockSweet);
 
 export default router;
 

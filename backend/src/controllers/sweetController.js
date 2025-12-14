@@ -78,7 +78,6 @@ export const searchSweets = async (req, res) => {
   try {
     const { name, category, minPrice, maxPrice } = req.query;
 
-    // Build search query
     const query = {};
 
     if (name) {
@@ -122,7 +121,6 @@ export const updateSweet = async (req, res) => {
     const { id } = req.params;
     const { name, category, price, quantity } = req.body;
 
-    // Find the sweet
     const sweet = await Sweet.findById(id);
     if (!sweet) {
       return res.status(404).json({
@@ -131,7 +129,6 @@ export const updateSweet = async (req, res) => {
       });
     }
 
-    // Validate price and quantity if provided
     if (price !== undefined && price < 0) {
       return res.status(400).json({
         success: false,
@@ -172,6 +169,137 @@ export const updateSweet = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error updating sweet',
+      error: error.message
+    });
+  }
+};
+
+// Delete a sweet (Admin only)
+export const deleteSweet = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const sweet = await Sweet.findById(id);
+    if (!sweet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Sweet not found'
+      });
+    }
+
+    await Sweet.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Sweet deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting sweet:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting sweet',
+      error: error.message
+    });
+  }
+};
+
+// Purchase a sweet (decrease quantity)
+export const purchaseSweet = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { quantity } = req.body;
+
+    if (!quantity || quantity <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid quantity to purchase'
+      });
+    }
+
+    const sweet = await Sweet.findById(id);
+    if (!sweet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Sweet not found'
+      });
+    }
+
+    if (sweet.quantity === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Sweet is out of stock'
+      });
+    }
+
+    if (sweet.quantity < quantity) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient quantity. Available: ${sweet.quantity}`
+      });
+    }
+
+    sweet.quantity -= quantity;
+    await sweet.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Purchase successful',
+      data: {
+        id: sweet._id,
+        name: sweet.name,
+        quantity: sweet.quantity,
+        purchased: quantity
+      }
+    });
+  } catch (error) {
+    console.error('Error purchasing sweet:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error processing purchase',
+      error: error.message
+    });
+  }
+};
+
+// Restock a sweet (increase quantity) - Admin only
+export const restockSweet = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { quantity } = req.body;
+
+    if (!quantity || quantity <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid quantity to restock'
+      });
+    }
+
+    const sweet = await Sweet.findById(id);
+    if (!sweet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Sweet not found'
+      });
+    }
+
+    sweet.quantity += quantity;
+    await sweet.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Restock successful',
+      data: {
+        id: sweet._id,
+        name: sweet.name,
+        quantity: sweet.quantity,
+        restocked: quantity
+      }
+    });
+  } catch (error) {
+    console.error('Error restocking sweet:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error restocking sweet',
       error: error.message
     });
   }
