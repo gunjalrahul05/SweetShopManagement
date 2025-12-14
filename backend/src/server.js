@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDatabase } from './database/db.js';
 import authRoutes from './routes/authRoutes.js';
+import sweetRoutes from './routes/sweetRoutes.js';
 
 dotenv.config();
 
@@ -22,7 +23,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is healthy' });
 });
 
+// API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/sweets', sweetRoutes);
 
 // Start server function
 async function startServer() {
