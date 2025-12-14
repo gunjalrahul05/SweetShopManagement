@@ -1,40 +1,64 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import api from '../utils/api'
-import './Auth.css'
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import api from "../utils/api";
+import "./Auth.css";
 
 function Register({ onLogin }) {
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: ''
-  })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+    username: "",
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+
+    // Client-side validation
+    if (!formData.username || !formData.email || !formData.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    if (formData.username.length < 3) {
+      setError("Username must be at least 3 characters");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
 
     try {
-      const response = await api.post('/auth/register', formData)
+      const response = await api.post("/auth/register", formData);
       if (response.data.success) {
-        onLogin(response.data.data.user, response.data.data.token)
+        onLogin(response.data.data.user, response.data.data.token);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.')
+      setError(
+        err.response?.data?.message || "Registration failed. Please try again."
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="auth-container">
@@ -73,7 +97,7 @@ function Register({ onLogin }) {
             />
           </div>
           <button type="submit" disabled={loading}>
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? "Registering..." : "Register"}
           </button>
         </form>
         <p className="auth-link">
@@ -81,8 +105,7 @@ function Register({ onLogin }) {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
-export default Register
-
+export default Register;

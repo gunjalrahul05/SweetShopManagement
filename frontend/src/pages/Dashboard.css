@@ -238,3 +238,242 @@
   text-align: center;
 }
 
+.admin-section {
+  background: #fff8e6;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.admin-form input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.admin-form button {
+  padding: 0.6rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.admin-card-controls {
+  margin-top: 1rem;
+  border-top: 1px dashed #eee;
+  padding-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-actions button {
+  padding: 0.45rem 0.6rem;
+  background: #6f42c1;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.admin-actions button:nth-child(2) {
+  background: #dc3545;
+}
+
+.restock-group input {
+  width: 80px;
+  padding: 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.edit-form input {
+  padding: 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-right: 0.3rem;
+}
+
+.edit-form button {
+  padding: 0.45rem 0.6rem;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .sweets-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    padding: 1.5rem;
+  }
+
+  .dashboard-content {
+    padding: 1.5rem;
+  }
+
+  .filters-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .user-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .sweets-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .sweet-card {
+    padding: 1rem;
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .filter-group input,
+  .filter-group select {
+    padding: 0.4rem;
+    font-size: 0.9rem;
+  }
+
+  .admin-section {
+    flex-direction: column;
+  }
+
+  .admin-form {
+    flex-direction: column;
+  }
+
+  .admin-form input {
+    width: 100%;
+  }
+
+  .admin-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .admin-actions button {
+    flex: 1;
+    min-width: 70px;
+  }
+
+  .restock-group {
+    width: 100%;
+    display: flex;
+    gap: 0.3rem;
+  }
+
+  .restock-group input {
+    flex: 1;
+  }
+
+  .restock-group button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard {
+    min-height: auto;
+  }
+
+  .dashboard-header {
+    padding: 0.75rem;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1rem;
+  }
+
+  .user-info span {
+    display: none;
+  }
+
+  .user-info button {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .sweets-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .sweet-card {
+    padding: 0.75rem;
+  }
+
+  .sweet-card h3 {
+    font-size: 1rem;
+  }
+
+  .sweet-card .price {
+    font-size: 1.2rem;
+  }
+
+  .filters-section h2 {
+    font-size: 1rem;
+  }
+
+  .filters-grid {
+    gap: 0.4rem;
+  }
+
+  .admin-card-controls {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .edit-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .edit-form input {
+    width: 100%;
+    padding: 0.3rem;
+  }
+
+  .edit-form button {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+  }
+}

@@ -1,39 +1,60 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import api from '../utils/api'
-import './Auth.css'
+import { useState } from "react";
+import React from "react";
+
+import { Link } from "react-router-dom";
+import api from "../utils/api";
+import "./Auth.css";
 
 function Login({ onLogin }) {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+
+    // Client-side validation
+    if (!formData.email || !formData.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
 
     try {
-      const response = await api.post('/auth/login', formData)
+      const response = await api.post("/auth/login", formData);
       if (response.data.success) {
-        onLogin(response.data.data.user, response.data.data.token)
+        onLogin(response.data.data.user, response.data.data.token);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.')
+      setError(
+        err.response?.data?.message || "Login failed. Please try again."
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="auth-container">
@@ -62,7 +83,7 @@ function Login({ onLogin }) {
             />
           </div>
           <button type="submit" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
         <p className="auth-link">
@@ -70,8 +91,7 @@ function Login({ onLogin }) {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
-export default Login
-
+export default Login;

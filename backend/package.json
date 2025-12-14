@@ -8,9 +8,14 @@
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "seed": "node src/scripts/seed.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
   },
-  "keywords": ["sweet-shop", "api", "express"],
+  "keywords": [
+    "sweet-shop",
+    "api",
+    "express"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -26,4 +31,3 @@
     "supertest": "^6.3.3"
   }
 }
-
