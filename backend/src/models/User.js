@@ -1,5 +1,4 @@
 // User model for MongoDB
-// This defines the structure of user documents in the database
 
 import mongoose from 'mongoose';
 

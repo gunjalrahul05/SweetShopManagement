@@ -27,7 +27,6 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
-# MongoDB doesn't need to be ignored as it runs separately
 
 # Logs
 logs/
