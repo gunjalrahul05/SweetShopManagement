@@ -137,7 +137,7 @@ describe('Sweets API', () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.message).toContain('required');
+      expect(response.body.message).toContain('provide');
     });
 
     test('should not create sweet with invalid price (negative)', async () => {
@@ -179,6 +179,201 @@ describe('Sweets API', () => {
           price: 10,
           quantity: 5
         })
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toContain('token');
+    });
+  });
+
+  // Test GET /api/sweets/search - Search sweets
+  describe('GET /api/sweets/search', () => {
+    beforeEach(async () => {
+      // Create test sweets for search
+      await Sweet.create([
+        {
+          name: 'Chocolate Bar',
+          category: 'Chocolate',
+          price: 2.50,
+          quantity: 100
+        },
+        {
+          name: 'Dark Chocolate',
+          category: 'Chocolate',
+          price: 3.00,
+          quantity: 50
+        },
+        {
+          name: 'Gummy Bears',
+          category: 'Gummies',
+          price: 1.75,
+          quantity: 200
+        },
+        {
+          name: 'Lollipop',
+          category: 'Hard Candy',
+          price: 0.50,
+          quantity: 150
+        }
+      ]);
+    });
+
+    test('should search sweets by name', async () => {
+      const response = await request(app)
+        .get('/api/sweets/search')
+        .set('Authorization', `Bearer ${authToken}`)
+        .query({ name: 'Chocolate' })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBeGreaterThan(0);
+      expect(response.body.data[0].name).toContain('Chocolate');
+    });
+
+    test('should search sweets by category', async () => {
+      const response = await request(app)
+        .get('/api/sweets/search')
+        .set('Authorization', `Bearer ${authToken}`)
+        .query({ category: 'Chocolate' })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBe(2);
+      expect(response.body.data.every(sweet => sweet.category === 'Chocolate')).toBe(true);
+    });
+
+    test('should search sweets by price range', async () => {
+      const response = await request(app)
+        .get('/api/sweets/search')
+        .set('Authorization', `Bearer ${authToken}`)
+        .query({ minPrice: 2.0, maxPrice: 3.0 })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBeGreaterThan(0);
+      expect(response.body.data.every(sweet => sweet.price >= 2.0 && sweet.price <= 3.0)).toBe(true);
+    });
+
+    test('should search sweets with multiple filters', async () => {
+      const response = await request(app)
+        .get('/api/sweets/search')
+        .set('Authorization', `Bearer ${authToken}`)
+        .query({ category: 'Chocolate', minPrice: 2.0 })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBeGreaterThan(0);
+      expect(response.body.data.every(sweet => 
+        sweet.category === 'Chocolate' && sweet.price >= 2.0
+      )).toBe(true);
+    });
+
+    test('should return empty array when no sweets match', async () => {
+      const response = await request(app)
+        .get('/api/sweets/search')
+        .set('Authorization', `Bearer ${authToken}`)
+        .query({ name: 'NonExistentSweet' })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    test('should require authentication', async () => {
+      const response = await request(app)
+        .get('/api/sweets/search')
+        .query({ name: 'Chocolate' })
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toContain('token');
+    });
+  });
+
+  // Test PUT /api/sweets/:id - Update a sweet
+  describe('PUT /api/sweets/:id', () => {
+    let testSweet;
+
+    beforeEach(async () => {
+      testSweet = await Sweet.create({
+        name: 'Original Sweet',
+        category: 'Original',
+        price: 1.00,
+        quantity: 100
+      });
+    });
+
+    test('should update a sweet successfully', async () => {
+      const updateData = {
+        name: 'Updated Sweet',
+        price: 2.50
+      };
+
+      const response = await request(app)
+        .put(`/api/sweets/${testSweet._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(updateData)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe('Sweet updated successfully');
+      expect(response.body.data.name).toBe(updateData.name);
+      expect(response.body.data.price).toBe(updateData.price);
+      expect(response.body.data.category).toBe(testSweet.category); // Should remain unchanged
+    });
+
+    test('should update only provided fields', async () => {
+      const updateData = {
+        quantity: 200
+      };
+
+      const response = await request(app)
+        .put(`/api/sweets/${testSweet._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(updateData)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.quantity).toBe(200);
+      expect(response.body.data.name).toBe(testSweet.name); // Should remain unchanged
+    });
+
+    test('should not update with invalid price (negative)', async () => {
+      const response = await request(app)
+        .put(`/api/sweets/${testSweet._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ price: -10 })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    test('should not update with invalid quantity (negative)', async () => {
+      const response = await request(app)
+        .put(`/api/sweets/${testSweet._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ quantity: -5 })
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    test('should return 404 for non-existent sweet', async () => {
+      const fakeId = '507f1f77bcf86cd799439011';
+      const response = await request(app)
+        .put(`/api/sweets/${fakeId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'Updated' })
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toContain('not found');
+    });
+
+    test('should require authentication', async () => {
+      const response = await request(app)
+        .put(`/api/sweets/${testSweet._id}`)
+        .send({ name: 'Updated' })
         .expect(401);
 
       expect(response.body.success).toBe(false);

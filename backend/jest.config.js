@@ -8,6 +8,10 @@ export default {
   ],
   coverageDirectory: 'coverage',
   verbose: true,
-  transform: {}
+  transform: {},
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1'
+  },
+  testTimeout: 10000
 };
 
