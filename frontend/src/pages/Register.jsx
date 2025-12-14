@@ -1,46 +1,54 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import './Register.css'
+import { Link } from 'react-router-dom'
+import api from '../utils/api'
+import './Auth.css'
 
-const Register = () => {
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+function Register({ onLogin }) {
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: ''
+  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { register } = useAuth()
-  const navigate = useNavigate()
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    const result = await register(username, email, password)
-    
-    if (result.success) {
-      navigate('/dashboard')
-    } else {
-      setError(result.message)
+    try {
+      const response = await api.post('/auth/register', formData)
+      if (response.data.success) {
+        onLogin(response.data.data.user, response.data.data.token)
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.')
+    } finally {
+      setLoading(false)
     }
-    
-    setLoading(false)
   }
 
   return (
-    <div className="register-container">
-      <div className="register-card">
-        <h1>Sweet Shop Management</h1>
-        <h2>Register</h2>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Register for Sweet Shop</h2>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Username</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
               required
             />
           </div>
@@ -48,8 +56,9 @@ const Register = () => {
             <label>Email</label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               required
             />
           </div>
@@ -57,8 +66,9 @@ const Register = () => {
             <label>Password</label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               required
             />
           </div>
@@ -66,7 +76,7 @@ const Register = () => {
             {loading ? 'Registering...' : 'Register'}
           </button>
         </form>
-        <p className="login-link">
+        <p className="auth-link">
           Already have an account? <Link to="/login">Login here</Link>
         </p>
       </div>

@@ -1,12 +1,12 @@
-.register-container {
+.auth-container {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.register-card {
+.auth-card {
   background: white;
   padding: 2rem;
   border-radius: 10px;
@@ -15,16 +15,10 @@
   max-width: 400px;
 }
 
-.register-card h1 {
-  text-align: center;
-  color: #667eea;
-  margin-bottom: 0.5rem;
-}
-
-.register-card h2 {
-  text-align: center;
+.auth-card h2 {
   margin-bottom: 1.5rem;
   color: #333;
+  text-align: center;
 }
 
 .form-group {
@@ -34,7 +28,7 @@
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: #555;
   font-weight: 500;
 }
 
@@ -51,7 +45,7 @@
   border-color: #667eea;
 }
 
-button {
+.auth-card button {
   width: 100%;
   padding: 0.75rem;
   background: #667eea;
@@ -59,16 +53,17 @@ button {
   border: none;
   border-radius: 5px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   margin-top: 1rem;
 }
 
-button:hover:not(:disabled) {
+.auth-card button:hover:not(:disabled) {
   background: #5568d3;
 }
 
-button:disabled {
-  opacity: 0.6;
+.auth-card button:disabled {
+  background: #ccc;
   cursor: not-allowed;
 }
 
@@ -78,20 +73,22 @@ button:disabled {
   padding: 0.75rem;
   border-radius: 5px;
   margin-bottom: 1rem;
+  text-align: center;
 }
 
-.login-link {
+.auth-link {
   text-align: center;
   margin-top: 1rem;
   color: #666;
 }
 
-.login-link a {
+.auth-link a {
   color: #667eea;
   text-decoration: none;
+  font-weight: 500;
 }
 
-.login-link a:hover {
+.auth-link a:hover {
   text-decoration: underline;
 }
 

@@ -1,45 +1,53 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import './Login.css'
+import { Link } from 'react-router-dom'
+import api from '../utils/api'
+import './Auth.css'
 
-const Login = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+function Login({ onLogin }) {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
-  const navigate = useNavigate()
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    const result = await login(email, password)
-    
-    if (result.success) {
-      navigate('/dashboard')
-    } else {
-      setError(result.message)
+    try {
+      const response = await api.post('/auth/login', formData)
+      if (response.data.success) {
+        onLogin(response.data.data.user, response.data.data.token)
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed. Please try again.')
+    } finally {
+      setLoading(false)
     }
-    
-    setLoading(false)
   }
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h1>Sweet Shop Management</h1>
-        <h2>Login</h2>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Login to Sweet Shop</h2>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Email</label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               required
             />
           </div>
@@ -47,8 +55,9 @@ const Login = () => {
             <label>Password</label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               required
             />
           </div>
@@ -56,7 +65,7 @@ const Login = () => {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-        <p className="register-link">
+        <p className="auth-link">
           Don't have an account? <Link to="/register">Register here</Link>
         </p>
       </div>

@@ -13,8 +13,8 @@
 }
 
 .dashboard-header h1 {
-  color: #667eea;
-  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
 }
 
 .user-info {
@@ -34,22 +34,20 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .user-info button:hover {
   background: #c82333;
 }
 
-.dashboard-content {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
 .sweets-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .sweet-card {
@@ -57,7 +55,7 @@
   padding: 1.5rem;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .sweet-card:hover {
@@ -68,6 +66,7 @@
 .sweet-card h3 {
   color: #333;
   margin-bottom: 0.5rem;
+  font-size: 1.25rem;
 }
 
 .sweet-card .category {
@@ -77,40 +76,46 @@
 }
 
 .sweet-card .price {
+  color: #667eea;
   font-size: 1.5rem;
   font-weight: bold;
-  color: #667eea;
-  margin-bottom: 0.5rem;
+  margin: 0.5rem 0;
 }
 
 .sweet-card .quantity {
-  color: #666;
+  color: #888;
+  font-size: 0.9rem;
   margin-bottom: 1rem;
 }
 
-.sweet-card button {
+.purchase-btn {
   width: 100%;
   padding: 0.75rem;
-  background: #667eea;
+  background: #28a745;
   color: white;
   border: none;
   border-radius: 5px;
-  cursor: pointer;
   font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.sweet-card button:hover:not(.disabled) {
-  background: #5568d3;
+.purchase-btn:hover:not(:disabled) {
+  background: #218838;
 }
 
-.sweet-card button.disabled {
+.purchase-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
 }
 
-.error {
-  color: #dc3545;
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 1rem;
+  margin: 1rem 2rem;
+  border-radius: 5px;
   text-align: center;
-  padding: 2rem;
 }
 

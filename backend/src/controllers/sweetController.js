@@ -78,6 +78,7 @@ export const searchSweets = async (req, res) => {
   try {
     const { name, category, minPrice, maxPrice } = req.query;
 
+    // Build search query
     const query = {};
 
     if (name) {
@@ -121,6 +122,7 @@ export const updateSweet = async (req, res) => {
     const { id } = req.params;
     const { name, category, price, quantity } = req.body;
 
+    // Find the sweet
     const sweet = await Sweet.findById(id);
     if (!sweet) {
       return res.status(404).json({
@@ -129,6 +131,7 @@ export const updateSweet = async (req, res) => {
       });
     }
 
+    // Validate price and quantity if provided
     if (price !== undefined && price < 0) {
       return res.status(400).json({
         success: false,
